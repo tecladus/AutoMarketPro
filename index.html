@@ -1,23 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AutoMarketPro</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+  </style>
 </head>
 <body>
-  <iframe 
-  src="https://script.google.com/macros/s/AKfycbxIFbrDtmUfmSaAtf5GlwlS-RLKhB4RTZwFESCs9cXmJC5DtxA6SdhJMKKaokr73wZbqA/exec"
-  width="100%"
-  height="100%"
-  allowfullscreen="true"
-  style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none;">
-</iframe>
-<script>
-  window.onload = function() {
-    const iframe = document.querySelector('iframe');
-    iframe.onerror = function() {
-      alert("Error al cargar el iframe. Verifica la URL del Web App.");
-    };
-  };
-</script>
+  <div class="container">
+    <h1>AutoMarketPro</h1>
+    <p id="message">Cargando datos...</p>
+    <ul id="items"></ul>
+  </div>
+
+  <script>
+    async function fetchData() {
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbwZqzAs1Ul2HsrDTuXgn6Qw1lY8TB3jSWfOTAlzb7KmkDyfOEuom_Q80WL7KD17pX_yKg/exec");
+        const data = await response.json();
+        document.getElementById("message").textContent = data.message;
+
+        const itemsList = document.getElementById("items");
+        data.items.forEach(item => {
+          const li = document.createElement("li");
+          li.textContent = item;
+          itemsList.appendChild(li);
+        });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        document.getElementById("message").textContent = "Error al cargar los datos.";
+      }
+    }
+
+    fetchData();
+  </script>
 </body>
 </html>
