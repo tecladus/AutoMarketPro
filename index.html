@@ -29,25 +29,21 @@
   </div>
 
   <script>
-    async function fetchData() {
-      try {
-        const response = await fetch("https://script.google.com/macros/s/AKfycbwZqzAs1Ul2HsrDTuXgn6Qw1lY8TB3jSWfOTAlzb7KmkDyfOEuom_Q80WL7KD17pX_yKg/exec");
-        const data = await response.json();
-        document.getElementById("message").textContent = data.message;
+    const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+const targetUrl = "https://script.google.com/macros/s/AKfycbwZqzAs1Ul2HsrDTuXgn6Qw1lY8TB3jSWfOTAlzb7KmkDyfOEuom_Q80WL7KD17pX_yKg/exec";
 
-        const itemsList = document.getElementById("items");
-        data.items.forEach(item => {
-          const li = document.createElement("li");
-          li.textContent = item;
-          itemsList.appendChild(li);
-        });
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        document.getElementById("message").textContent = "Error al cargar los datos.";
-      }
-    }
+async function fetchData() {
+  try {
+    const response = await fetch(proxyUrl + targetUrl);
+    const data = await response.json();
+    console.log(data);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+}
 
-    fetchData();
+fetchData();
+
   </script>
 </body>
 </html>
