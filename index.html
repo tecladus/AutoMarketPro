@@ -29,14 +29,12 @@
   </div>
 
   <script>
-    const proxyUrl = "https://cors-anywhere.herokuapp.com/";
-const targetUrl = "https://script.google.com/macros/s/AKfycbwZqzAs1Ul2HsrDTuXgn6Qw1lY8TB3jSWfOTAlzb7KmkDyfOEuom_Q80WL7KD17pX_yKg/exec";
+    const targetUrl = "https://script.google.com/macros/s/AKfycbwZqzAs1Ul2HsrDTuXgn6Qw1lY8TB3jSWfOTAlzb7KmkDyfOEuom_Q80WL7KD17pX_yKg/exec";
 
 async function fetchData() {
   try {
-    const response = await fetch(proxyUrl + targetUrl);
-    const data = await response.json();
-    console.log(data);
+    const response = await fetch(targetUrl, { mode: "no-cors" });
+    console.log("Request sent");
   } catch (error) {
     console.error("Error fetching data:", error);
   }
