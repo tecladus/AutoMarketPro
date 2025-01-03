@@ -1,47 +1,25 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AutoMarketPro</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>AutoMarketPro</h1>
-    <p id="message">Cargando datos...</p>
-    <ul id="items"></ul>
-  </div>
+  <iframe 
+    src="https://script.google.com/macros/s/AKfycbwZqzAs1Ul2HsrDTuXgn6Qw1lY8TB3jSWfOTAlzb7KmkDyfOEuom_Q80WL7KD17pX_yKg/exec"
+    width="100%"
+    height="100%"
+    allowfullscreen="true"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none;">
+  </iframe>
 
   <script>
-    const targetUrl = "https://script.google.com/macros/s/AKfycbwZqzAs1Ul2HsrDTuXgn6Qw1lY8TB3jSWfOTAlzb7KmkDyfOEuom_Q80WL7KD17pX_yKg/exec";
-
-async function fetchData() {
-  try {
-    const response = await fetch(targetUrl, { mode: "no-cors" });
-    console.log("Request sent");
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  }
-}
-
-fetchData();
-
+    window.onload = function() {
+      document.querySelector('iframe')
+        .requestFullscreen()
+        .catch((err) => {
+          console.error('Error attempting to enable full-screen mode:', err.message);
+        });
+    };
   </script>
 </body>
 </html>
