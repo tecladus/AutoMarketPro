@@ -5,20 +5,37 @@
 </head>
 <body>
   <iframe 
+    id="iframe-fullscreen"
     src="https://script.google.com/macros/s/AKfycbwWGysOzUeGPSnL19B1VtbQc1QzGy5scAqWiQyj2KWuoxTK11fdkcWEV4awD5KmcuMAWA/exec"
     width="100%"
     height="100%"
     allowfullscreen="true"
     style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none;">
   </iframe>
-
   <script>
     window.onload = function() {
-      document.querySelector('iframe')
-        .requestFullscreen()
-        .catch((err) => {
-          console.error('Error attempting to enable full-screen mode:', err.message);
+      const iframe = document.getElementById('iframe-fullscreen');
+      
+      // Intenta habilitar pantalla completa automáticamente
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen().catch((err) => {
+          console.error('Error al intentar activar el modo de pantalla completa:', err.message);
         });
+      } else if (iframe.mozRequestFullScreen) { // Firefox
+        iframe.mozRequestFullScreen().catch((err) => {
+          console.error('Error al intentar activar el modo de pantalla completa en Firefox:', err.message);
+        });
+      } else if (iframe.webkitRequestFullscreen) { // Safari
+        iframe.webkitRequestFullscreen().catch((err) => {
+          console.error('Error al intentar activar el modo de pantalla completa en Safari:', err.message);
+        });
+      } else if (iframe.msRequestFullscreen) { // IE/Edge
+        iframe.msRequestFullscreen().catch((err) => {
+          console.error('Error al intentar activar el modo de pantalla completa en IE/Edge:', err.message);
+        });
+      } else {
+        console.warn('La API de pantalla completa no es compatible con este navegador.');
+      }
     };
   </script>
 </body>
