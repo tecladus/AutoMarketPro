@@ -1,42 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AutoMarketPro</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    #iframe-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
 </head>
 <body>
-  <iframe 
-    id="iframe-fullscreen"
-    src="https://script.google.com/macros/s/AKfycbwWGysOzUeGPSnL19B1VtbQc1QzGy5scAqWiQyj2KWuoxTK11fdkcWEV4awD5KmcuMAWA/exec"
-    width="100%"
-    height="100%"
-    allowfullscreen="true"
-    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none;">
-  </iframe>
+  <div id="iframe-container"></div>
   <script>
-    window.onload = function() {
-      const iframe = document.getElementById('iframe-fullscreen');
-      
-      // Intenta habilitar pantalla completa automáticamente
-      if (iframe.requestFullscreen) {
-        iframe.requestFullscreen().catch((err) => {
-          console.error('Error al intentar activar el modo de pantalla completa:', err.message);
-        });
-      } else if (iframe.mozRequestFullScreen) { // Firefox
-        iframe.mozRequestFullScreen().catch((err) => {
-          console.error('Error al intentar activar el modo de pantalla completa en Firefox:', err.message);
-        });
-      } else if (iframe.webkitRequestFullscreen) { // Safari
-        iframe.webkitRequestFullscreen().catch((err) => {
-          console.error('Error al intentar activar el modo de pantalla completa en Safari:', err.message);
-        });
-      } else if (iframe.msRequestFullscreen) { // IE/Edge
-        iframe.msRequestFullscreen().catch((err) => {
-          console.error('Error al intentar activar el modo de pantalla completa en IE/Edge:', err.message);
+    (function() {
+      function loadIframe() {
+        var container = document.getElementById('iframe-container');
+        var iframe = document.createElement('iframe');
+        iframe.src = "https://script.google.com/macros/s/AKfycbwWGysOzUeGPSnL19B1VtbQc1QzGy5scAqWiQyj2KWuoxTK11fdkcWEV4awD5KmcuMAWA/exec";
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        container.appendChild(iframe);
+      }
+
+      function tryFullscreen() {
+        var container = document.getElementById('iframe-container');
+        if (container.requestFullscreen) {
+          container.requestFullscreen().catch(function(err) {
+            console.warn('No se pudo activar el modo de pantalla completa:', err.message);
+          });
+        } else if (container.mozRequestFullScreen) { // Firefox
+          container.mozRequestFullScreen().catch(function(err) {
+            console.warn('No se pudo activar el modo de pantalla completa en Firefox:', err.message);
+          });
+        } else if (container.webkitRequestFullscreen) { // Chrome, Safari
+          container.webkitRequestFullscreen().catch(function(err) {
+            console.warn('No se pudo activar el modo de pantalla completa en Chrome/Safari:', err.message);
+          });
+        } else if (container.msRequestFullscreen) { // IE/Edge
+          container.msRequestFullscreen().catch(function(err) {
+            console.warn('No se pudo activar el modo de pantalla completa en IE/Edge:', err.message);
+          });
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          loadIframe();
+          setTimeout(tryFullscreen, 1000);
         });
       } else {
-        console.warn('La API de pantalla completa no es compatible con este navegador.');
+        loadIframe();
+        setTimeout(tryFullscreen, 1000);
       }
-    };
+    })();
   </script>
 </body>
 </html>
+
