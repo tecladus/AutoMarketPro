@@ -1390,8 +1390,8 @@
                     year: yearMenu.querySelector(".sBtn-text").innerText,
                     brand: brandMenu.querySelector(".sBtn-text").innerText,
                     model: modelMenu.querySelector(".sBtn-text").innerText,
-                    amountToSpend: document.getElementById('amountToSpend').value,
-                    fullName: document.getElementById('name').value,
+                    amount: document.getElementById('amountToSpend').value,
+                    name: document.getElementById('name').value,
                     email: document.getElementById('email').value,
                     phone: document.getElementById('phone').value
                 };
@@ -1402,6 +1402,8 @@
                 })
                 .then(response => response.json())
                 .then(data => {
+                    finishBtn.disabled = false;
+                    finishBtn.textContent = 'Finalizar';
                     nextView();
                 })
                 .catch(error => {
