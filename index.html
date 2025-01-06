@@ -1,73 +1,1452 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AutoMarketPro</title>
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
-    #iframe-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-  </style>
-</head>
-<body>
-  <div id="iframe-container"></div>
-  <script>
-    (function() {
-      function loadIframe() {
-        var container = document.getElementById('iframe-container');
-        var iframe = document.createElement('iframe');
-        iframe.src = "https://script.google.com/macros/s/AKfycbwWGysOzUeGPSnL19B1VtbQc1QzGy5scAqWiQyj2KWuoxTK11fdkcWEV4awD5KmcuMAWA/exec";
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
-        iframe.style.border = 'none';
-        container.appendChild(iframe);
-      }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoMarketPro</title>
+    <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
 
-      function tryFullscreen() {
-        var container = document.getElementById('iframe-container');
-        if (container.requestFullscreen) {
-          container.requestFullscreen().catch(function(err) {
-            console.warn('No se pudo activar el modo de pantalla completa:', err.message);
-          });
-        } else if (container.mozRequestFullScreen) { // Firefox
-          container.mozRequestFullScreen().catch(function(err) {
-            console.warn('No se pudo activar el modo de pantalla completa en Firefox:', err.message);
-          });
-        } else if (container.webkitRequestFullscreen) { // Chrome, Safari
-          container.webkitRequestFullscreen().catch(function(err) {
-            console.warn('No se pudo activar el modo de pantalla completa en Chrome/Safari:', err.message);
-          });
-        } else if (container.msRequestFullscreen) { // IE/Edge
-          container.msRequestFullscreen().catch(function(err) {
-            console.warn('No se pudo activar el modo de pantalla completa en IE/Edge:', err.message);
-          });
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
         }
-      }
 
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-          loadIframe();
-          setTimeout(tryFullscreen, 1000);
+        body {
+            min-height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                url('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&q=80') center/cover no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 32px;
+        }
+
+        .cotizador {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .select-menu {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .select-menu .select-btn {
+            display: flex;
+            height: 50px;
+            background: #fff;
+            padding: 0 16px;
+            font-size: 16px;
+            font-weight: 400;
+            border-radius: 8px;
+            align-items: center;
+            cursor: pointer;
+            justify-content: space-between;
+            border: 1px solid #e0e0e0;
+        }
+
+        .select-menu.disabled .select-btn {
+            background-color: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .select-btn i {
+            font-size: 20px;
+            transition: 0.3s;
+        }
+
+        .select-menu.active .select-btn i {
+            transform: rotate(-180deg);
+        }
+
+        .select-menu .options {
+            position: absolute;
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .select-menu.active .options {
+            display: block;
+        }
+
+        .options .option {
+            display: flex;
+            height: 45px;
+            cursor: pointer;
+            padding: 0 16px;
+            border-radius: 4px;
+            align-items: center;
+            background: #fff;
+        }
+
+        .options .option:hover {
+            background: #f5f5f5;
+        }
+
+        .option img {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+        }
+
+        .option .option-text {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .btn {
+            background-color: #0ea5e9;
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #0284c7;
+        }
+
+        .btn:disabled {
+            background-color: #f3f4f6;
+            color: #374151;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .select-menu .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            position: absolute;
+            bottom: -20px;
+            left: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .select-menu {
+                width: 100%;
+            }
+
+            .actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div id="view1" class="view active">
+            <h1>Encontra tu mejor opción</h1>
+            <p class="subtitle">Te ayudamos a buscar la mejor opción para vos.</p>
+
+            <div class="cotizador">
+                <div class="select-menu" id="yearMenu">
+                    <div class="select-btn">
+                        <span class="sBtn-text">Año</span>
+                        <i class="bx bx-chevron-down"></i>
+                    </div>
+                    <ul class="options">
+                        <!-- Las opciones de año se generarán dinámicamente con JavaScript -->
+                    </ul>
+                </div>
+
+                <div class="select-menu disabled" id="brandMenu">
+                    <div class="select-btn">
+                        <span class="sBtn-text">Marca</span>
+                        <i class="bx bx-chevron-down"></i>
+                    </div>
+                    <ul class="options">
+                        <!-- Las opciones de marca se agregarán aquí -->
+                    </ul>
+                </div>
+
+                <div class="select-menu disabled" id="modelMenu">
+                    <div class="select-btn">
+                        <span class="sBtn-text">Modelo</span>
+                        <i class="bx bx-chevron-down"></i>
+                    </div>
+                    <ul class="options">
+                        <!-- Las opciones de modelo se agregarán aquí -->
+                    </ul>
+                </div>
+            </div>
+
+            <div class="actions">
+                <div></div> <!-- Espacio vacío para mantener el layout -->
+                <button id="cotizarBtn" class="btn" disabled onclick="nextView()">Buscar auto</button>
+            </div>
+        </div>
+
+        <div id="view2" class="view">
+            <h1>Detalles del vehículo</h1>
+            <div class="form-group">
+                <label for="amountToSpend">Monto aproximado a gastar</label>
+                <input type="number" id="amountToSpend" required placeholder="">
+                <div id="amountToSpendError" class="error-message"></div>
+            </div>
+            <h1>Contacto</h1>
+            <div class="form-group">
+                <label for="name">Nombre Completo</label>
+                <input type="text" id="name" required placeholder="">
+                <div id="nameError" class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="email">Correo Electrónico</label>
+                <input type="email" id="email" required placeholder="">
+                <div id="emailError" class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="phone">Teléfono</label>
+                <input type="tel" id="phone" required placeholder="">
+                <div id="phoneError" class="error-message"></div>
+            </div>
+            <div class="actions">
+                <button class="btn" onclick="prevView()">Volver</button>
+                <button id="finishBtn" class="btn" disabled onclick="finishQuotation()">Finalizar</button>
+            </div>
+        </div>
+
+        <div id="view3" class="view">
+            <h1>¡Gracias por completar los datos!</h1>
+            <p class="subtitle">Hemos recibido tu solicitud de cotización. En breve nos pondremos en contacto contigo.
+            </p>
+            <div class="actions">
+                <div></div>
+                <button class="btn" onclick="resetForm()">Buscar otro auto</button>
+                <div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const views = document.querySelectorAll('.view');
+        let currentView = 0;
+        const data = {};
+
+        const yearMenu = document.querySelector("#yearMenu");
+        const brandMenu = document.querySelector("#brandMenu");
+        const modelMenu = document.querySelector("#modelMenu");
+        const cotizarBtn = document.querySelector("#cotizarBtn");
+
+        const yearOptions = yearMenu.querySelector(".options");
+        const brandOptions = brandMenu.querySelector(".options");
+        const modelOptions = modelMenu.querySelector(".options");
+
+        const currentYear = new Date().getFullYear();
+
+        // Generar opciones de año
+        for (let year = currentYear; year >= 2010; year--) {
+            const option = document.createElement("li");
+            option.classList.add("option");
+            option.innerHTML = `<span class="option-text">${year}</span>`;
+            yearOptions.appendChild(option);
+        }
+
+        // Marcas de autos con sus logos
+        const brands = [
+            { name: "Alfa Romeo", logo: "15KQ8m_h6K07T2Uyiq6jQNaqMZHjf52y9", year: 1910 },
+            { name: "Audi", logo: "13D7WjRAn-oh77JT3YEQt_rm5liGLjeII", year: 1909 },
+            // { name: "Baic", logo: "1K0iUr4NTHgljnbvX1rCGx5WGZ8qkjbtY", year: 1916 },
+            { name: "Bmw", logo: "1FOXPVNLEcW7KPifQjHsQptJoGqBSNM-8", year: 1997 },
+            { name: "Chery", logo: "1TDpfvvVBGVBfts8r4Q_7sXn7wVculOjD", year: 1999 },
+            { name: "Chevrolet", logo: "1EpcgxtNNyeF7-BQRaRvlCyO2lEDbAvt9", year: 1912 },
+            { name: "Citroen", logo: "1X8zSBTROhE1R3JURpRFpYBTGi4-snFt2", year: 1924 },
+            { name: "Ds", logo: "1bJSadean5lQ3XIQBO5JZj12EwVX2lPEz", year: 2015 },
+            { name: "Fiat", logo: "1t7jl0yUE49g_0zfc8SyE8UPM0ZhPDhCN", year: 1900 },
+            { name: "Ford", logo: "1qLkcVek7F0bYO0vszPSRUmQSCi11ru03", year: 1903 },
+            // { name: "Great Wall", logo: "1Lh3_pjZA8_CJqfMAYQkzqAlWmImGrj_E", year: 1996 },
+            // { name: "Haval", logo: "1Ce9B0f4sAylTRY9prTpBKZbzdwagpgta", year: 2013 },
+            { name: "Honda", logo: "1PegMIJDgN05xDZF_-opH_LMu8ETTcUjc", year: 1963 },
+            { name: "Hyundai", logo: "1GCWAL9qh8DyzhkMIqziDhiF-ae6vfF91", year: 1975 },
+            // { name: "Jac", logo: "1NF-npXyAR6hNBZ8ERQ1g3XD1hjWx0FJL", year: 1999 },
+            { name: "Jeep", logo: "1ALojY5gOEcOPaFw4wiEwTH0sxoYU71P0", year: 1941 },
+            { name: "Jetour", logo: "1bKfeUlHYL-Omrncar51Kitrz50XnZfSy", year: 2018 },
+            // { name: "Kia", logo: "1DTfGrrt92IfjeoFgg5-EUEKrX6ITc5V5", year: 1974 },
+            // { name: "Land Rover", logo: "1XLRecSjAimpOT3Y7NFnsgLyM_rIqHrus", year: 1948 },
+            { name: "Mercedes Benz", logo: "1aAVvWNwIZaTMtfWNpRvKE1Mm0i3uo9wN", year: 1926 },
+            { name: "Mini", logo: "1inmFwHJnLI_l3lB71DEy-qsFx6-7-tet", year: 1959 },
+            { name: "Mitsubishi", logo: "1DxTfyGQfW-zP6pi2NoGJOC4MoYEQyaNH", year: 1917 },
+            { name: "Nissan", logo: "1MW3BfTkBBM8JpwR9sdLNerprtoJkK6jW", year: 1935 },
+            { name: "Peugeot", logo: "1pUP34H75dqxcOzFglRRwlnSYfeCk3LtA", year: 1891 },
+            { name: "Ram", logo: "1vkiPnwBrcyBQjJzkd3u_Y87hxoo0ujyd", year: 2010 },
+            { name: "Renault", logo: "1dLwzF2OtqQBABH9n32c9DRkqw3oiIKAI", year: 1900 },
+            { name: "Subaru", logo: "1Yu8BRKvl2vDnhmg4f1ioYYNtiOAJGeeD", year: 1954 },
+            { name: "Suzuki", logo: "1qJ79k1M8TGCWPTCR_bWg14sxN4Qe6-vZ", year: 1955 },
+            { name: "Toyota", logo: "1IG771icGSrGvzHu8ZbXwEA_cyNXJOnSs", year: 1936 },
+            { name: "Volkswagen", logo: "1HOp-gzjvBD9r6WSQ37VvD3hne4ioen_d", year: 1938 },
+            { name: "Volvo", logo: "14g6cJSK08O3Cj-nwu0n4gS87ZdXM2qUB", year: 1927 }
+        ];
+
+        // Generar opciones de marca
+        brands.forEach(brand => {
+            const option = document.createElement("li");
+            option.classList.add("option");
+            option.innerHTML = `<img src="https://drive.google.com/thumbnail?id=${brand.logo}" alt="${brand.name} logo"><span class="option-text">${brand.name}</span>`;
+            brandOptions.appendChild(option);
         });
-      } else {
-        loadIframe();
-        setTimeout(tryFullscreen, 1000);
-      }
-    })();
-  </script>
-</body>
-</html>
 
+        // Modelos de autos
+        const models = {
+            "Alfa Romeo": [
+                { name: "147", startYear: 2000, endYear: 2010 },
+                { name: "156", startYear: 2000, endYear: 2006 },
+                { name: "GT", startYear: 2003, endYear: 2010 },
+                { name: "159", startYear: 2005, endYear: 2011 },
+                { name: "Brera", startYear: 2005, endYear: 2010 },
+                { name: "Spider", startYear: 2006, endYear: 2010 },
+                { name: "MiTo", startYear: 2008, endYear: 2018 },
+                { name: "Giulietta", startYear: 2010, endYear: 2020 },
+                { name: "4C", startYear: 2013, endYear: 2020 },
+                { name: "Giulia", startYear: 2015, endYear: currentYear },
+                { name: "Stelvio", startYear: 2016, endYear: currentYear },
+                { name: "Giulia Quadrifoglio", startYear: 2020, endYear: currentYear },
+                { name: "Stelvio Quadrifoglio", startYear: 2020, endYear: currentYear },
+                { name: "Tonale", startYear: 2022, endYear: currentYear }
+            ],
+            "Audi": [
+                { name: "100", startYear: 1968, endYear: 1994 },
+                { name: "200", startYear: 1979, endYear: 1991 },
+                { name: "4000", startYear: 1980, endYear: 1987 },
+                { name: "5000", startYear: 1978, endYear: 1988 },
+                { name: "80", startYear: 1972, endYear: 1996 },
+                { name: "90", startYear: 1984, endYear: 1991 },
+                { name: "A3", startYear: 1996, endYear: currentYear },
+                { name: "A4", startYear: 1994, endYear: currentYear },
+                { name: "A5", startYear: 2007, endYear: currentYear },
+                { name: "A6", startYear: 1994, endYear: currentYear },
+                { name: "A7", startYear: 2010, endYear: currentYear },
+                { name: "A8", startYear: 1994, endYear: currentYear },
+                { name: "allroad", startYear: 1999, endYear: currentYear },
+                { name: "Cabriolet", startYear: 1991, endYear: 2000 },
+                { name: "Coupe", startYear: 1980, endYear: 1996 },
+                { name: "Q3", startYear: 2011, endYear: currentYear },
+                { name: "Q5", startYear: 2008, endYear: currentYear },
+                { name: "Q7", startYear: 2005, endYear: currentYear },
+                { name: "Quattro", startYear: 1980, endYear: 1991 },
+                { name: "R8", startYear: 2006, endYear: currentYear },
+                { name: "RS 4", startYear: 1999, endYear: currentYear },
+                { name: "RS 5", startYear: 2010, endYear: currentYear },
+                { name: "RS 6", startYear: 2002, endYear: currentYear },
+                { name: "S4", startYear: 1991, endYear: currentYear },
+                { name: "S5", startYear: 2007, endYear: currentYear },
+                { name: "S6", startYear: 1994, endYear: currentYear },
+                { name: "S7", startYear: 2012, endYear: currentYear },
+                { name: "S8", startYear: 1996, endYear: currentYear },
+                { name: "TT", startYear: 1998, endYear: currentYear },
+                { name: "TT RS", startYear: 2009, endYear: currentYear },
+                { name: "TTS", startYear: 2008, endYear: currentYear },
+                { name: "V8 Quattro", startYear: 1988, endYear: 1993 },
+                { name: "e-tron", startYear: 2019, endYear: currentYear }
+            ],
+            "Baic": [
+                { name: "Senova D20", startYear: 2014, endYear: 2019 },
+                { name: "Senova D50", startYear: 2014, endYear: 2019 },
+                { name: "Senova X25", startYear: 2015, endYear: 2019 },
+                { name: "Senova X35", startYear: 2016, endYear: 2019 },
+                { name: "Senova X55", startYear: 2015, endYear: 2019 },
+                { name: "Senova X65", startYear: 2015, endYear: 2019 },
+                { name: "BJ40", startYear: 2013, endYear: 2019 },
+                { name: "BJ80", startYear: 2016, endYear: 2019 },
+                { name: "BJ90", startYear: 2017, endYear: 2019 },
+                { name: "Beijing U5", startYear: 2020, endYear: currentYear },
+                { name: "Beijing U7", startYear: 2020, endYear: currentYear },
+                { name: "Beijing X3", startYear: 2020, endYear: currentYear },
+                { name: "Beijing X5", startYear: 2020, endYear: currentYear },
+                { name: "Beijing X6", startYear: 2020, endYear: currentYear },
+                { name: "Beijing X7", startYear: 2020, endYear: currentYear },
+                { name: "Beijing EU5", startYear: 2020, endYear: currentYear },
+                { name: "Beijing EX3", startYear: 2020, endYear: currentYear },
+                { name: "Beijing EC5", startYear: 2020, endYear: currentYear },
+                { name: "Beijing BJ30", startYear: 2020, endYear: currentYear },
+                { name: "Beijing BJ40", startYear: 2020, endYear: currentYear },
+                { name: "Beijing BJ60", startYear: 2020, endYear: currentYear },
+                { name: "Beijing BJ80", startYear: 2020, endYear: currentYear },
+                { name: "Beijing BJ90", startYear: 2020, endYear: currentYear }
+            ],
+            "Bmw": [
+                { name: "Serie 7 (E65/E66/E67/E68)", startYear: 2001, endYear: 2008 },
+                { name: "Z4 (E85/E86)", startYear: 2002, endYear: 2008 },
+                { name: "X3 (E83)", startYear: 2003, endYear: 2010 },
+                { name: "Serie 1 (E81/E82/E87/E88)", startYear: 2004, endYear: 2013 },
+                { name: "Serie 3 (E90/E91/E92/E93)", startYear: 2005, endYear: 2013 },
+                { name: "Serie 6 (E63/E64)", startYear: 2003, endYear: 2010 },
+                { name: "X5 (E70)", startYear: 2006, endYear: 2013 },
+                { name: "X6 (E71)", startYear: 2008, endYear: 2014 },
+                { name: "Serie 5 (E60/E61)", startYear: 2003, endYear: 2010 },
+                { name: "Serie 5 Gran Turismo (F07)", startYear: 2009, endYear: 2017 },
+                { name: "Serie 7 (F01/F02)", startYear: 2008, endYear: 2015 },
+                { name: "Z4 (E89)", startYear: 2009, endYear: 2016 },
+                { name: "Serie 1 M Coupé", startYear: 2011, endYear: 2012 },
+                { name: "Serie 5 (F10/F11)", startYear: 2010, endYear: 2017 },
+                { name: "Serie 6 (F12/F13/F06)", startYear: 2011, endYear: 2018 },
+                { name: "X1 (E84)", startYear: 2009, endYear: 2015 },
+                { name: "X3 (F25)", startYear: 2010, endYear: 2017 },
+                { name: "X4 (F26)", startYear: 2014, endYear: 2018 },
+                { name: "X5 (F15)", startYear: 2013, endYear: 2018 },
+                { name: "X6 (F16)", startYear: 2014, endYear: 2019 },
+                { name: "i3", startYear: 2013, endYear: 2022 },
+                { name: "i8", startYear: 2014, endYear: 2020 },
+                { name: "Serie 2 (F22/F23)", startYear: 2013, endYear: 2021 },
+                { name: "Serie 4 (F32/F33/F36)", startYear: 2013, endYear: 2020 },
+                { name: "Serie 7 (G11/G12)", startYear: 2015, endYear: 2022 },
+                { name: "Serie 5 (G30/G31)", startYear: 2017, endYear: currentYear },
+                { name: "Serie 8 (G14/G15/G16)", startYear: 2018, endYear: currentYear },
+                { name: "X2 (F39)", startYear: 2017, endYear: currentYear },
+                { name: "X3 (G01)", startYear: 2017, endYear: currentYear },
+                { name: "X4 (G02)", startYear: 2018, endYear: currentYear },
+                { name: "X5 (G05)", startYear: 2018, endYear: currentYear },
+                { name: "X6 (G06)", startYear: 2019, endYear: currentYear },
+                { name: "X7 (G07)", startYear: 2018, endYear: currentYear },
+                { name: "Z4 (G29)", startYear: 2018, endYear: currentYear },
+                { name: "Serie 1 (F40)", startYear: 2019, endYear: currentYear },
+                { name: "Serie 2 Gran Coupé (F44)", startYear: 2019, endYear: currentYear },
+                { name: "Serie 4 (G22/G23/G26)", startYear: 2020, endYear: currentYear },
+                { name: "iX3", startYear: 2020, endYear: currentYear },
+                { name: "i4", startYear: 2021, endYear: currentYear },
+                { name: "iX", startYear: 2021, endYear: currentYear },
+                { name: "Serie 7 (G70)", startYear: 2022, endYear: currentYear },
+                { name: "i7", startYear: 2022, endYear: currentYear },
+                { name: "Serie 2 Active Tourer (U06)", startYear: 2021, endYear: currentYear },
+                { name: "X1 (U11)", startYear: 2022, endYear: currentYear },
+                { name: "iX1", startYear: 2022, endYear: currentYear },
+                { name: "XM", startYear: 2022, endYear: currentYear }
+            ],
+            "Chery": [
+                { name: "QQ", startYear: 2003, endYear: 2022 },
+                { name: "QQ6", startYear: 2006, endYear: 2010 },
+                { name: "A1", startYear: 2007, endYear: 2015 },
+                { name: "A5", startYear: 2006, endYear: 2012 },
+                { name: "Eastar", startYear: 2006, endYear: 2016 },
+                { name: "Tiggo", startYear: 2005, endYear: 2023 },
+                { name: "Arrizo 7", startYear: 2013, endYear: 2018 },
+                { name: "Tiggo 5", startYear: 2013, endYear: 2021 },
+                { name: "eQ", startYear: 2014, endYear: 2020 },
+                { name: "Tiggo 3x", startYear: 2016, endYear: currentYear },
+                { name: "Arrizo 5", startYear: 2016, endYear: currentYear },
+                { name: "Tiggo 7", startYear: 2016, endYear: currentYear },
+                { name: "Tiggo 8", startYear: 2018, endYear: currentYear },
+                { name: "Omoda 5", startYear: 2022, endYear: currentYear },
+                { name: "Tiggo 8 L", startYear: 2024, endYear: currentYear },
+                { name: "Tiggo 9", startYear: 2023, endYear: currentYear },
+                { name: "Arrizo 8", startYear: 2022, endYear: currentYear }
+            ],
+            "Chevrolet": [
+                { name: "Silverado 1500", startYear: 1999, endYear: 2006 },
+                { name: "Silverado 2500HD/3500HD", startYear: 2001, endYear: 2006 },
+                { name: "Malibu", startYear: 1997, endYear: 2003 },
+                { name: "Impala", startYear: 2000, endYear: 2005 },
+                { name: "Monte Carlo", startYear: 2000, endYear: 2007 },
+                { name: "Avalanche", startYear: 2002, endYear: 2006 },
+                { name: "TrailBlazer", startYear: 2002, endYear: 2009 },
+                { name: "Equinox", startYear: 2005, endYear: 2009 },
+                { name: "Cobalt", startYear: 2005, endYear: 2010 },
+                { name: "HHR", startYear: 2006, endYear: 2011 },
+                { name: "Tahoe", startYear: 2000, endYear: 2006 },
+                { name: "Suburban", startYear: 2000, endYear: 2006 },
+                { name: "Colorado", startYear: 2004, endYear: 2012 },
+                { name: "Uplander", startYear: 2005, endYear: 2009 },
+                { name: "Aveo", startYear: 2004, endYear: 2011 },
+                { name: "Optra", startYear: 2002, endYear: 2011 },
+                { name: "Epica", startYear: 2004, endYear: 2006 },
+                { name: "Spark", startYear: 2005, endYear: 2010 },
+                { name: "Captiva", startYear: 2006, endYear: 2018 },
+                { name: "Cruze", startYear: 2008, endYear: 2016 },
+                { name: "Orlando", startYear: 2011, endYear: 2018 },
+                { name: "Trax", startYear: 2013, endYear: 2022 },
+                { name: "Sonic", startYear: 2011, endYear: 2020 },
+                { name: "Volt", startYear: 2010, endYear: 2019 },
+                { name: "Bolt EV", startYear: 2016, endYear: 2023 },
+                { name: "Camaro", startYear: 2010, endYear: 2024 },
+                { name: "Corvette", startYear: 2014, endYear: 2019 },
+                { name: "Blazer", startYear: 2019, endYear: currentYear },
+                { name: "Trailblazer", startYear: 2020, endYear: currentYear },
+                { name: "Equinox EV", startYear: 2024, endYear: currentYear },
+                { name: "Silverado EV", startYear: 2024, endYear: currentYear },
+                { name: "Malibu", startYear: 2016, endYear: currentYear },
+                { name: "Traverse", startYear: 2018, endYear: currentYear },
+                { name: "Tahoe", startYear: 2021, endYear: currentYear },
+                { name: "Suburban", startYear: 2021, endYear: currentYear }
+            ],
+            "Citroen": [
+                { name: "C5", startYear: 2000, endYear: 2017 },
+                { name: "C3", startYear: 2002, endYear: 2023 },
+                { name: "C8", startYear: 2002, endYear: 2014 },
+                { name: "C2", startYear: 2003, endYear: 2009 },
+                { name: "C4", startYear: 2004, endYear: 2018 },
+                { name: "C1", startYear: 2005, endYear: 2021 },
+                { name: "C6", startYear: 2005, endYear: 2012 },
+                { name: "C4 Picasso", startYear: 2007, endYear: 2020 },
+                { name: "C-Crosser", startYear: 2007, endYear: 2012 },
+                { name: "C3 Picasso", startYear: 2009, endYear: 2017 },
+                { name: "DS3", startYear: 2010, endYear: 2019 },
+                { name: "DS4", startYear: 2011, endYear: 2018 },
+                { name: "DS5", startYear: 2011, endYear: 2018 },
+                { name: "C4 Aircross", startYear: 2012, endYear: 2017 },
+                { name: "C-Elysée", startYear: 2012, endYear: 2022 },
+                { name: "C4 Cactus", startYear: 2014, endYear: 2018 },
+                { name: "C1 (segunda generación)", startYear: 2014, endYear: 2021 },
+                { name: "C3 (tercera generación)", startYear: 2016, endYear: 2023 },
+                { name: "C3 Aircross", startYear: 2017, endYear: 2023 },
+                { name: "C5 Aircross", startYear: 2017, endYear: 2023 },
+                { name: "C6 (segunda generación)", startYear: 2016, endYear: 2023 },
+                { name: "Ami", startYear: 2020, endYear: currentYear },
+                { name: "C4 (tercera generación)", startYear: 2020, endYear: currentYear },
+                { name: "C5 X", startYear: 2021, endYear: currentYear },
+                { name: "C4 X", startYear: 2022, endYear: currentYear },
+                { name: "C3 (cuarta generación)", startYear: 2024, endYear: currentYear },
+                { name: "Basalt", startYear: 2024, endYear: currentYear }
+            ],
+            "Ds": [
+                { name: "DS 3", startYear: 2010, endYear: 2019 },
+                { name: "DS 3 Crossback", startYear: 2019, endYear: 2023 },
+                { name: "DS 3", startYear: 2023, endYear: currentYear },
+                { name: "DS 4", startYear: 2011, endYear: 2015 },
+                { name: "DS 4", startYear: 2015, endYear: 2018 },
+                { name: "DS 4", startYear: 2021, endYear: currentYear },
+                { name: "DS 5", startYear: 2011, endYear: 2018 },
+                { name: "DS 7 Crossback", startYear: 2017, endYear: 2022 },
+                { name: "DS 7", startYear: 2022, endYear: currentYear },
+                { name: "DS 9", startYear: 2020, endYear: currentYear }
+            ],
+            "Fiat": [
+                { name: "Doblò", startYear: 2000, endYear: 2023 },
+                { name: "Ulysse", startYear: 2002, endYear: 2022 },
+                { name: "Panda (Segunda generación)", startYear: 2003, endYear: 2012 },
+                { name: "Panda 4x4 (Segunda generación)", startYear: 2004, endYear: 2012 },
+                { name: "Croma (Segunda generación)", startYear: 2005, endYear: 2010 },
+                { name: "Sedici", startYear: 2005, endYear: 2014 },
+                { name: "Grande Punto", startYear: 2005, endYear: 2018 },
+                { name: "Bravo", startYear: 2007, endYear: 2014 },
+                { name: "500", startYear: 2007, endYear: currentYear },
+                { name: "Linea", startYear: 2008, endYear: 2018 },
+                { name: "Fiorino/Qubo (Tercera generación)", startYear: 2008, endYear: 2023 },
+                { name: "500 C", startYear: 2009, endYear: currentYear },
+                { name: "Punto EVO", startYear: 2009, endYear: 2018 },
+                { name: "Doblò (Segunda generación)", startYear: 2009, endYear: 2023 },
+                { name: "Panda (Tercera generación)", startYear: 2012, endYear: currentYear },
+                { name: "500L", startYear: 2012, endYear: currentYear },
+                { name: "500X", startYear: 2014, endYear: currentYear },
+                { name: "Tipo", startYear: 2015, endYear: currentYear },
+                { name: "500e", startYear: 2020, endYear: currentYear },
+                { name: "500 3+1", startYear: 2020, endYear: currentYear },
+                { name: "500e (Tercera generación)", startYear: 2020, endYear: currentYear },
+                { name: "Panda (Cuarta generación)", startYear: currentYear, endYear: currentYear },
+                { name: "600e", startYear: 2023, endYear: currentYear },
+                { name: "Fastback", startYear: 2022, endYear: currentYear }
+            ],
+            "Ford": [
+                { name: "Fiesta", startYear: 2000, endYear: 2019 },
+                { name: "Focus", startYear: 2000, endYear: 2018 },
+                { name: "Mondeo", startYear: 2000, endYear: 2022 },
+                { name: "Kuga", startYear: 2008, endYear: currentYear },
+                { name: "C-Max", startYear: 2003, endYear: 2019 },
+                { name: "S-Max", startYear: 2006, endYear: currentYear },
+                { name: "Galaxy", startYear: 2006, endYear: currentYear },
+                { name: "Edge", startYear: 2006, endYear: currentYear },
+                { name: "Flex", startYear: 2009, endYear: 2019 },
+                { name: "Escape", startYear: 2000, endYear: currentYear },
+                { name: "Explorer", startYear: 2000, endYear: currentYear },
+                { name: "Expedition", startYear: 2000, endYear: currentYear },
+                { name: "Ecosport", startYear: 2003, endYear: currentYear },
+                { name: "Everest", startYear: 2003, endYear: currentYear },
+                { name: "Ranger", startYear: 2000, endYear: currentYear },
+                { name: "F-150", startYear: 2000, endYear: currentYear },
+                { name: "F-250", startYear: 2000, endYear: currentYear },
+                { name: "F-350", startYear: 2000, endYear: currentYear },
+                { name: "F-450", startYear: 2000, endYear: currentYear },
+                { name: "F-550", startYear: 2000, endYear: currentYear },
+                { name: "F-650", startYear: 2000, endYear: currentYear },
+                { name: "F-750", startYear: 2000, endYear: currentYear },
+                { name: "Super Duty", startYear: 2000, endYear: currentYear },
+                { name: "Transit", startYear: 2000, endYear: currentYear },
+                { name: "Tourneo Custom", startYear: 2012, endYear: currentYear },
+                { name: "Tourneo Connect", startYear: 2002, endYear: currentYear },
+                { name: "Mustang", startYear: 2000, endYear: currentYear },
+                { name: "Mustang Mach-E", startYear: 2020, endYear: currentYear },
+                { name: "GT", startYear: 2005, endYear: 2006 },
+                { name: "GT", startYear: 2017, endYear: currentYear },
+                { name: "Bronco", startYear: 2020, endYear: currentYear },
+                { name: "Maverick", startYear: 2022, endYear: currentYear },
+                { name: "Territory", startYear: 2020, endYear: currentYear },
+                { name: "Puma", startYear: 2019, endYear: currentYear },
+                { name: "B-Max", startYear: 2012, endYear: 2017 },
+                { name: "Ka+", startYear: 2016, endYear: 2021 },
+                { name: "Ka", startYear: 2000, endYear: 2016 },
+                { name: "Courier", startYear: 2014, endYear: currentYear },
+                { name: "Figo", startYear: 2010, endYear: currentYear },
+                { name: "Figo Aspire", startYear: 2015, endYear: 2018 },
+                { name: "Figo Cross", startYear: 2016, endYear: 2018 },
+                { name: "Figo Sports Edition", startYear: 2017, endYear: 2018 },
+                { name: "Figo Titanium", startYear: 2018, endYear: currentYear }
+            ],
+            "Great Wall": [
+                { name: "Peri", startYear: 2007, endYear: 2010 },
+                { name: "Voleex C10", startYear: 2010, endYear: 2014 },
+                { name: "Voleex C30", startYear: 2010, endYear: 2016 },
+                { name: "Voleex C50", startYear: 2012, endYear: 2016 },
+                { name: "Coolbear", startYear: 2009, endYear: 2015 },
+                { name: "Florid", startYear: 2008, endYear: 2013 },
+                { name: "Haval M1", startYear: 2007, endYear: 2010 },
+                { name: "Haval M2", startYear: 2010, endYear: 2015 },
+                { name: "Haval M4", startYear: 2012, endYear: 2013 },
+                { name: "Hover", startYear: 2005, endYear: 2012 },
+                { name: "Haval H3", startYear: 2005, endYear: 2012 },
+                { name: "Haval H5", startYear: 2010, endYear: 2015 },
+                { name: "Haval H6", startYear: 2011, endYear: 2024 },
+                { name: "Haval H7", startYear: 2015, endYear: 2021 },
+                { name: "Haval H8", startYear: 2013, endYear: 2018 },
+                { name: "Haval H9", startYear: 2014, endYear: 2024 },
+                { name: "Haval F5", startYear: 2018, endYear: 2020 },
+                { name: "Haval F7", startYear: 2018, endYear: 2024 },
+                { name: "Haval F7X", startYear: 2018, endYear: 2024 },
+                { name: "Haval H6 Coupe", startYear: 2015, endYear: 2021 },
+                { name: "Haval H6 GT", startYear: 2021, endYear: 2024 },
+                { name: "Haval Big Dog", startYear: 2020, endYear: 2024 },
+                { name: "Haval Jolion", startYear: 2020, endYear: 2021 },
+                { name: "Haval H6S", startYear: 2021, endYear: 2024 },
+                { name: "Haval H7", startYear: 2020, endYear: 2024 },
+                { name: "Haval Xiaolong", startYear: 2023, endYear: 2024 },
+                { name: "Haval Xiaolong Max", startYear: 2023, endYear: 2024 },
+                { name: "Haval Raptor", startYear: 2023, endYear: 2024 },
+                { name: "Wey Macchiato", startYear: 2021, endYear: 2023 },
+                { name: "Wey VV5", startYear: 2017, endYear: 2021 },
+                { name: "Wey VV6", startYear: 2018, endYear: 2021 },
+                { name: "Wey VV7", startYear: 2017, endYear: 2021 },
+                { name: "Wey P8", startYear: 2017, endYear: 2020 },
+                { name: "Ora R1", startYear: 2019, endYear: 2022 },
+                { name: "Ora R2", startYear: 2020, endYear: 2022 },
+                { name: "Ora iQ", startYear: 2018, endYear: 2020 },
+                { name: "Ora Ballet Cat", startYear: 2022, endYear: 2024 },
+                { name: "Ora Good Cat", startYear: 2020, endYear: 2024 },
+                { name: "Ora Lightning Cat", startYear: 2022, endYear: 2024 },
+                { name: "Tank 300", startYear: 2020, endYear: 2024 },
+                { name: "Tank 400", startYear: 2023, endYear: 2024 },
+                { name: "Tank 500", startYear: 2022, endYear: 2024 },
+                { name: "Tank 700", startYear: 2024, endYear: currentYear },
+                { name: "Tank 800", startYear: 2024, endYear: currentYear },
+                { name: "Great Wall Pao", startYear: 2019, endYear: 2024 },
+                { name: "Great Wall Wingle 7", startYear: 2018, endYear: 2024 },
+                { name: "Great Wall King Kong Cannon", startYear: 2021, endYear: 2024 },
+                { name: "Great Wall Shanhai Cannon", startYear: 2022, endYear: 2024 }
+            ],
+            "Haval": [
+                { name: "H5", startYear: 2010, endYear: 2020 },
+                { name: "H6", startYear: 2011, endYear: currentYear },
+                { name: "H9", startYear: 2014, endYear: currentYear },
+                { name: "M6", startYear: 2017, endYear: currentYear },
+                { name: "F7", startYear: 2018, endYear: currentYear },
+                { name: "F7x", startYear: 2018, endYear: currentYear },
+                { name: "Big Dog", startYear: 2020, endYear: currentYear },
+                { name: "Jolion", startYear: 2020, endYear: currentYear },
+                { name: "Chitu", startYear: 2021, endYear: currentYear },
+                { name: "Shenshou", startYear: 2021, endYear: currentYear },
+                { name: "Cool Dog", startYear: 2022, endYear: currentYear },
+                { name: "Menglong", startYear: 2023, endYear: currentYear },
+                { name: "Xiaolong", startYear: 2023, endYear: currentYear },
+                { name: "Xiaolong Max", startYear: 2023, endYear: currentYear },
+                { name: "Raptor", startYear: 2023, endYear: currentYear }
+            ],
+            "Honda": [
+                { name: "Civic", startYear: 2000, endYear: currentYear },
+                { name: "Accord", startYear: 2000, endYear: currentYear },
+                { name: "CR-V", startYear: 2000, endYear: currentYear },
+                { name: "Pilot", startYear: 2003, endYear: currentYear },
+                { name: "Odyssey", startYear: 2005, endYear: currentYear },
+                { name: "Ridgeline", startYear: 2005, endYear: currentYear },
+                { name: "Fit", startYear: 2007, endYear: currentYear },
+                { name: "Insight", startYear: 2009, endYear: currentYear },
+                { name: "CR-Z", startYear: 2010, endYear: 2016 },
+                { name: "HR-V", startYear: 2015, endYear: currentYear },
+                { name: "Clarity", startYear: 2016, endYear: 2021 },
+                { name: "Passport", startYear: 2019, endYear: currentYear },
+                { name: "Civic Type R", startYear: 2021, endYear: currentYear },
+                { name: "Prologue", startYear: 2023, endYear: currentYear }
+            ],
+            "Hyundai": [
+                { name: "Accent", startYear: 2000, endYear: 2017 },
+                { name: "Atos", startYear: 2000, endYear: 2014 },
+                { name: "Elantra", startYear: 2000, endYear: currentYear },
+                { name: "Getz", startYear: 2000, endYear: 2011 },
+                { name: "i10", startYear: 2007, endYear: currentYear },
+                { name: "i20", startYear: 2008, endYear: currentYear },
+                { name: "i30", startYear: 2007, endYear: currentYear },
+                { name: "i40", startYear: 2011, endYear: 2019 },
+                { name: "iX20", startYear: 2010, endYear: 2019 },
+                { name: "iX35", startYear: 2010, endYear: 2023 },
+                { name: "Kona", startYear: 2017, endYear: currentYear },
+                { name: "Palisade", startYear: 2018, endYear: currentYear },
+                { name: "Santa Fe", startYear: 2000, endYear: currentYear },
+                { name: "Sonata", startYear: 2000, endYear: currentYear },
+                { name: "Tucson", startYear: 2004, endYear: currentYear },
+                { name: "Veloster", startYear: 2011, endYear: 2022 },
+                { name: "Venue", startYear: 2019, endYear: currentYear },
+                { name: "Ioniq 5", startYear: 2021, endYear: currentYear },
+                { name: "Ioniq 6", startYear: 2022, endYear: currentYear },
+                { name: "Ioniq 9", startYear: 2024, endYear: currentYear }
+            ],
+            "Jac": [
+                { name: "Heyue", startYear: 2011, endYear: 2017 },
+                { name: "Heyue A30", startYear: 2012, endYear: 2016 },
+                { name: "Heyue A20", startYear: 2013, endYear: 2014 },
+                { name: "Heyue Tongyue", startYear: 2008, endYear: 2017 },
+                { name: "Tongyue Cross", startYear: 2009, endYear: 2012 },
+                { name: "Yueyue", startYear: 2010, endYear: 2016 },
+                { name: "Yueyue Cross", startYear: 2012, endYear: 2016 },
+                { name: "Refine S2", startYear: 2015, endYear: 2018 },
+                { name: "Refine S2 Mini", startYear: 2017, endYear: 2020 },
+                { name: "Refine S3", startYear: 2015, endYear: 2016 },
+                { name: "Refine S4", startYear: 2018, endYear: 2020 },
+                { name: "Refine S5", startYear: 2013, endYear: 2019 },
+                { name: "Refine S7", startYear: 2017, endYear: 2020 },
+                { name: "Refine M2", startYear: 2010, endYear: 2016 },
+                { name: "Refine M3", startYear: 2015, endYear: currentYear },
+                { name: "Refine M4", startYear: 2016, endYear: currentYear },
+                { name: "Refine M5", startYear: 2002, endYear: currentYear },
+                { name: "Refine M6", startYear: 2013, endYear: currentYear },
+                { name: "Refine RF8", startYear: currentYear, endYear: currentYear },
+                { name: "iEV4", startYear: 2011, endYear: 2018 },
+                { name: "iEV6E", startYear: 2016, endYear: 2021 },
+                { name: "iEV7", startYear: 2016, endYear: 2023 },
+                { name: "iEV7S", startYear: 2016, endYear: 2023 },
+                { name: "iEVA50", startYear: 2018, endYear: currentYear },
+                { name: "iEV20", startYear: 2019, endYear: currentYear },
+                { name: "iEV6E Sport", startYear: 2018, endYear: currentYear }
+            ],
+            "Jeep": [
+                { name: "Cherokee", startYear: 2000, endYear: 2007 },
+                { name: "Wrangler", startYear: 2000, endYear: 2006 },
+                { name: "Grand Cherokee", startYear: 2005, endYear: 2010 },
+                { name: "Compass", startYear: 2007, endYear: 2017 },
+                { name: "Patriot", startYear: 2007, endYear: 2017 },
+                { name: "Wrangler JK", startYear: 2007, endYear: 2018 },
+                { name: "Liberty", startYear: 2008, endYear: 2012 },
+                { name: "Grand Cherokee WK2", startYear: 2011, endYear: 2022 },
+                { name: "Cherokee KL", startYear: 2014, endYear: 2023 },
+                { name: "Renegade", startYear: 2015, endYear: currentYear },
+                { name: "Wrangler JL", startYear: 2018, endYear: currentYear },
+                { name: "Gladiator", startYear: 2019, endYear: currentYear },
+                { name: "Grand Cherokee WL", startYear: 2021, endYear: currentYear },
+                { name: "Commander", startYear: 2021, endYear: currentYear },
+                { name: "Grand Wagoneer", startYear: 2021, endYear: currentYear },
+                { name: "Wagoneer", startYear: 2021, endYear: currentYear },
+                { name: "Avenger", startYear: 2023, endYear: currentYear }
+            ],
+            "Jetour": [
+                { name: "X70", startYear: 2018, endYear: currentYear },
+                { name: "X70M", startYear: 2020, endYear: currentYear },
+                { name: "X70 Plus", startYear: 2022, endYear: currentYear },
+                { name: "X70 Pro", startYear: 2023, endYear: currentYear },
+                { name: "X70 C-DM", startYear: 2024, endYear: currentYear },
+                { name: "X90", startYear: 2019, endYear: currentYear },
+                { name: "X90 Plus", startYear: 2021, endYear: currentYear },
+                { name: "X90 Pro", startYear: 2024, endYear: currentYear },
+                { name: "Shanhai L9", startYear: 2024, endYear: currentYear },
+                { name: "Dashing", startYear: 2022, endYear: currentYear },
+                { name: "Traveller", startYear: 2023, endYear: currentYear },
+                { name: "Shanhai T2", startYear: 2024, endYear: currentYear },
+                { name: "Freelancer", startYear: 2024, endYear: currentYear },
+                { name: "Shanhai T1", startYear: 2024, endYear: currentYear },
+                { name: "Ice Cream", startYear: 2023, endYear: currentYear },
+                { name: "X50", startYear: 2024, endYear: currentYear }
+            ],
+            "Kia": [
+                { name: "Picanto", startYear: 2004, endYear: 2017 },
+                { name: "Rio", startYear: 1999, endYear: 2023 },
+                { name: "Cerato", startYear: 2008, endYear: 2024 },
+                { name: "Optima", startYear: 2000, endYear: 2019 },
+                { name: "Cadenza", startYear: 2009, endYear: 2021 },
+                { name: "Soul", startYear: 2008, endYear: 2019 },
+                { name: "Sportage", startYear: 1993, endYear: 2021 },
+                { name: "Sorento", startYear: 2002, endYear: 2020 },
+                { name: "Stonic", startYear: 2017, endYear: 2017 },
+                { name: "Niro", startYear: 2016, endYear: 2022 },
+                { name: "Seltos", startYear: 2019, endYear: 2019 },
+                { name: "Telluride", startYear: 2018, endYear: 2018 },
+                { name: "K3", startYear: 2023, endYear: 2023 },
+                { name: "K4", startYear: 2024, endYear: 2024 },
+                { name: "K5", startYear: 2000, endYear: 2019 },
+                { name: "K8", startYear: 2021, endYear: 2021 },
+                { name: "K9", startYear: 2012, endYear: 2018 },
+                { name: "Pegas", startYear: 2017, endYear: 2017 },
+                { name: "Carens", startYear: 1999, endYear: 2021 },
+                { name: "Carnival", startYear: 1998, endYear: 2020 },
+                { name: "EV6", startYear: 2021, endYear: 2021 },
+                { name: "EV9", startYear: 2023, endYear: 2023 },
+                { name: "EV3", startYear: 2024, endYear: 2024 },
+                { name: "EV5", startYear: 2023, endYear: 2023 },
+                { name: "Soul EV", startYear: 2014, endYear: 2024 },
+                { name: "Mohave", startYear: 2009, endYear: 2024 },
+                { name: "Stinger", startYear: 2017, endYear: 2023 },
+                { name: "XCeed", startYear: 2018, endYear: 2018 },
+                { name: "Sonet", startYear: 2020, endYear: 2020 },
+                { name: "Syros", startYear: 2025, endYear: currentYear },
+                { name: "Tasman", startYear: 2025, endYear: currentYear }
+            ],
+            "Land Rover": [
+                { name: "Freelander", startYear: 2000, endYear: 2006 },
+                { name: "Range Rover", startYear: 2002, endYear: currentYear },
+                { name: "Discovery 3", startYear: 2004, endYear: 2009 },
+                { name: "Range Rover Sport", startYear: 2005, endYear: currentYear },
+                { name: "Discovery 4", startYear: 2009, endYear: 2016 },
+                { name: "Range Rover Evoque", startYear: 2011, endYear: 2018 },
+                { name: "Range Rover Velar", startYear: 2017, endYear: currentYear },
+                { name: "Discovery Sport", startYear: 2015, endYear: currentYear },
+                { name: "Defender 90", startYear: 2020, endYear: currentYear },
+                { name: "Defender 110", startYear: 2020, endYear: currentYear },
+                { name: "Defender 130", startYear: 2020, endYear: currentYear }
+            ],
+            "Mercedes Benz": [
+                { name: "A-Class", startYear: 2000, endYear: currentYear },
+                { name: "B-Class", startYear: 2005, endYear: currentYear },
+                { name: "C-Class", startYear: 2000, endYear: currentYear },
+                { name: "E-Class", startYear: 2000, endYear: currentYear },
+                { name: "S-Class", startYear: 2000, endYear: currentYear },
+                { name: "CLA", startYear: 2013, endYear: currentYear },
+                { name: "CLS", startYear: 2005, endYear: currentYear },
+                { name: "GLA", startYear: 2014, endYear: currentYear },
+                { name: "GLB", startYear: 2019, endYear: currentYear },
+                { name: "GLC", startYear: 2015, endYear: currentYear },
+                { name: "GLE", startYear: 2015, endYear: currentYear },
+                { name: "GLS", startYear: 2016, endYear: currentYear },
+                { name: "M-Class", startYear: 2000, endYear: 2015 },
+                { name: "R-Class", startYear: 2005, endYear: 2017 },
+                { name: "SLC", startYear: 2016, endYear: 2020 },
+                { name: "SLK", startYear: 2000, endYear: 2015 },
+                { name: "SL", startYear: 2000, endYear: currentYear },
+                { name: "SLS AMG", startYear: 2010, endYear: 2014 },
+                { name: "AMG GT", startYear: 2015, endYear: currentYear },
+                { name: "EQC", startYear: 2019, endYear: currentYear },
+                { name: "EQS", startYear: 2021, endYear: currentYear },
+                { name: "EQB", startYear: 2021, endYear: currentYear },
+                { name: "EQE", startYear: 2022, endYear: currentYear },
+                { name: "EQG", startYear: 2024, endYear: currentYear },
+                { name: "EQV", startYear: 2019, endYear: currentYear },
+                { name: "V-Class", startYear: 2000, endYear: currentYear },
+                { name: "X-Class", startYear: 2017, endYear: 2020 }
+            ],
+            "Mini": [
+                { name: "One", startYear: 2001, endYear: 2006 },
+                { name: "Cooper", startYear: 2001, endYear: 2006 },
+                { name: "Cooper S", startYear: 2002, endYear: 2006 },
+                { name: "Convertible", startYear: 2004, endYear: 2008 },
+                { name: "Clubman", startYear: 2007, endYear: 2014 },
+                { name: "Countryman", startYear: 2010, endYear: 2016 },
+                { name: "Paceman", startYear: 2013, endYear: 2016 },
+                { name: "Clubman", startYear: 2015, endYear: 2024 },
+                { name: "Hatch", startYear: 2014, endYear: 2024 },
+                { name: "Countryman", startYear: 2017, endYear: 2023 },
+                { name: "Aceman", startYear: 2024, endYear: currentYear },
+                { name: "Cooper", startYear: 2024, endYear: currentYear },
+                { name: "Convertible", startYear: 2024, endYear: currentYear }
+            ],
+            "Mitsubishi": [
+                { name: "Colt", startYear: 2000, endYear: 2012 },
+                { name: "Lancer", startYear: 2000, endYear: 2017 },
+                { name: "Galant", startYear: 2000, endYear: 2012 },
+                { name: "Outlander", startYear: 2001, endYear: currentYear },
+                { name: "Pajero", startYear: 2001, endYear: 2021 },
+                { name: "L200/Triton", startYear: 2005, endYear: currentYear },
+                { name: "ASX", startYear: 2010, endYear: currentYear },
+                { name: "Eclipse Cross", startYear: 2017, endYear: currentYear },
+                { name: "Mirage", startYear: 2012, endYear: currentYear },
+                { name: "Mirage G4", startYear: 2013, endYear: currentYear },
+                { name: "Xpander", startYear: 2017, endYear: currentYear },
+                { name: "Xpander Cross", startYear: 2019, endYear: currentYear },
+                { name: "Delica D:5", startYear: 2007, endYear: 2018 },
+                { name: "Delica D:2", startYear: 2011, endYear: 2021 },
+                { name: "Delica Mini", startYear: 2023, endYear: currentYear },
+                { name: "eK Wagon", startYear: 2001, endYear: 2019 },
+                { name: "eK X EV", startYear: 2022, endYear: currentYear },
+                { name: "L300", startYear: 1979, endYear: 2022 },
+                { name: "Minicab EV", startYear: 2011, endYear: 2023 },
+                { name: "Minicab Truck", startYear: 2013, endYear: currentYear }
+            ],
+            "Nissan": [
+                { name: "Almera", startYear: 2000, endYear: 2006 },
+                { name: "Maxima", startYear: 2000, endYear: 2008 },
+                { name: "Sentra", startYear: 2000, endYear: 2006 },
+                { name: "X-Trail", startYear: 2001, endYear: 2007 },
+                { name: "Murano", startYear: 2002, endYear: 2008 },
+                { name: "Pathfinder", startYear: 2005, endYear: 2012 },
+                { name: "Tiida", startYear: 2006, endYear: 2013 },
+                { name: "Rogue", startYear: 2007, endYear: 2013 },
+                { name: "Altima", startYear: 2007, endYear: 2012 },
+                { name: "370Z", startYear: 2009, endYear: 2019 },
+                { name: "Juke", startYear: 2010, endYear: 2019 },
+                { name: "Leaf", startYear: 2010, endYear: 2017 },
+                { name: "NV200", startYear: 2010, endYear: 2019 },
+                { name: "Micra", startYear: 2011, endYear: 2017 },
+                { name: "NV350 Urvan", startYear: 2012, endYear: 2019 },
+                { name: "Note", startYear: 2012, endYear: 2017 },
+                { name: "Frontier", startYear: 2014, endYear: 2019 },
+                { name: "Qashqai", startYear: 2014, endYear: 2019 },
+                { name: "Murano", startYear: 2015, endYear: 2019 },
+                { name: "Altima", startYear: 2015, endYear: 2019 },
+                { name: "Maxima", startYear: 2015, endYear: 2019 },
+                { name: "Rogue", startYear: 2015, endYear: 2019 },
+                { name: "Leaf", startYear: 2018, endYear: 2019 },
+                { name: "Micra", startYear: 2018, endYear: 2019 },
+                { name: "Navara", startYear: 2018, endYear: 2019 },
+                { name: "Kicks", startYear: 2018, endYear: 2019 },
+                { name: "Frontier", startYear: 2019, endYear: 2019 },
+                { name: "Qashqai", startYear: 2019, endYear: 2019 },
+                { name: "X-Trail", startYear: 2019, endYear: 2019 },
+                { name: "Murano", startYear: 2019, endYear: 2019 },
+                { name: "Altima", startYear: 2019, endYear: 2019 },
+                { name: "Maxima", startYear: 2019, endYear: 2019 },
+                { name: "Rogue", startYear: 2019, endYear: 2019 },
+                { name: "Leaf", startYear: 2020, endYear: currentYear },
+                { name: "Micra", startYear: 2020, endYear: currentYear },
+                { name: "Navara", startYear: 2020, endYear: currentYear },
+                { name: "Kicks", startYear: 2020, endYear: currentYear },
+                { name: "Frontier", startYear: 2020, endYear: currentYear },
+                { name: "Qashqai", startYear: 2020, endYear: currentYear },
+                { name: "X-Trail", startYear: 2020, endYear: currentYear },
+                { name: "Murano", startYear: 2020, endYear: currentYear },
+                { name: "Altima", startYear: 2020, endYear: currentYear },
+                { name: "Maxima", startYear: 2020, endYear: currentYear },
+                { name: "Rogue", startYear: 2020, endYear: currentYear },
+                { name: "Ariya", startYear: 2020, endYear: currentYear },
+                { name: "Magnite", startYear: 2020, endYear: currentYear },
+                { name: "Z", startYear: 2022, endYear: currentYear }
+            ],
+            "Peugeot": [
+                { name: "206", startYear: 1998, endYear: 2013 },
+                { name: "307", startYear: 2001, endYear: 2008 },
+                { name: "407", startYear: 2004, endYear: 2011 },
+                { name: "308", startYear: 2007, endYear: 2023 },
+                { name: "3008", startYear: 2008, endYear: 2023 },
+                { name: "5008", startYear: 2009, endYear: 2023 },
+                { name: "208", startYear: 2012, endYear: 2023 },
+                { name: "2008", startYear: 2013, endYear: 2023 },
+                { name: "308", startYear: 2021, endYear: 2023 },
+                { name: "3008", startYear: 2023, endYear: 2023 },
+                { name: "5008", startYear: 2024, endYear: 2024 },
+                { name: "208", startYear: 2024, endYear: 2024 },
+                { name: "2008", startYear: 2024, endYear: 2024 },
+                { name: "308", startYear: 2024, endYear: 2024 },
+                { name: "3008", startYear: 2024, endYear: 2024 },
+                { name: "5008", startYear: 2024, endYear: 2024 },
+                { name: "208", startYear: 2025, endYear: currentYear },
+                { name: "2008", startYear: 2025, endYear: currentYear },
+                { name: "308", startYear: 2025, endYear: currentYear },
+                { name: "3008", startYear: 2025, endYear: currentYear },
+                { name: "5008", startYear: 2025, endYear: currentYear }
+            ],
+            "Ram": [
+                { name: "1500", startYear: 2000, endYear: 2014 },
+                { name: "2500", startYear: 2000, endYear: 2014 },
+                { name: "3500", startYear: 2000, endYear: 2014 },
+                { name: "4500", startYear: 2000, endYear: 2014 },
+                { name: "5500", startYear: 2000, endYear: 2014 },
+                { name: "700", startYear: 2014, endYear: currentYear },
+                { name: "1000", startYear: 2018, endYear: currentYear },
+                { name: "1200", startYear: 2025, endYear: currentYear },
+                { name: "ProMaster", startYear: 2013, endYear: currentYear },
+                { name: "ProMaster City", startYear: 2014, endYear: currentYear },
+                { name: "ProMaster Rapid", startYear: 2014, endYear: currentYear },
+                { name: "V700 Rapid", startYear: 2014, endYear: currentYear },
+                { name: "V700 City", startYear: 2018, endYear: currentYear },
+                { name: "Rampage", startYear: 2023, endYear: currentYear }
+            ],
+            "Renault": [
+                { name: "Mégane", startYear: 2000, endYear: 2002 },
+                { name: "Mégane II", startYear: 2002, endYear: 2008 },
+                { name: "Mégane III", startYear: 2008, endYear: 2016 },
+                { name: "Mégane IV", startYear: 2016, endYear: 2023 },
+                { name: "Mégane E-Tech Electric", startYear: 2021, endYear: currentYear },
+                { name: "Scénic", startYear: 2000, endYear: 2009 },
+                { name: "Scénic II", startYear: 2009, endYear: 2016 },
+                { name: "Scénic III", startYear: 2016, endYear: 2023 },
+                { name: "Scénic E-Tech", startYear: 2024, endYear: currentYear },
+                { name: "Laguna", startYear: 2000, endYear: 2007 },
+                { name: "Laguna II", startYear: 2007, endYear: 2015 },
+                { name: "Laguna III", startYear: 2015, endYear: currentYear },
+                { name: "Clio", startYear: 2000, endYear: 2005 },
+                { name: "Clio II", startYear: 2005, endYear: 2012 },
+                { name: "Clio III", startYear: 2012, endYear: 2019 },
+                { name: "Clio IV", startYear: 2019, endYear: currentYear },
+                { name: "Twingo", startYear: 2000, endYear: 2007 },
+                { name: "Twingo II", startYear: 2007, endYear: 2014 },
+                { name: "Twingo III", startYear: 2014, endYear: currentYear },
+                { name: "Kangoo", startYear: 2000, endYear: 2007 },
+                { name: "Kangoo II", startYear: 2007, endYear: 2013 },
+                { name: "Kangoo III", startYear: 2013, endYear: currentYear },
+                { name: "Captur", startYear: 2013, endYear: 2019 },
+                { name: "Captur II", startYear: 2019, endYear: currentYear },
+                { name: "Kadjar", startYear: 2015, endYear: currentYear },
+                { name: "Koleos", startYear: 2006, endYear: 2016 },
+                { name: "Koleos II", startYear: 2016, endYear: currentYear },
+                { name: "Espace", startYear: 2000, endYear: 2006 },
+                { name: "Espace II", startYear: 2006, endYear: 2015 },
+                { name: "Espace III", startYear: 2015, endYear: currentYear },
+                { name: "Lodgy", startYear: 2012, endYear: currentYear },
+                { name: "Dokker", startYear: 2012, endYear: currentYear },
+                { name: "Alaskan", startYear: 2016, endYear: currentYear },
+                { name: "Duster", startYear: 2012, endYear: currentYear },
+                { name: "Symbioz", startYear: 2024, endYear: currentYear }
+            ],
+            "Subaru": [
+                { name: "Impreza", startYear: 2000, endYear: 2011 },
+                { name: "Legacy", startYear: 2000, endYear: 2014 },
+                { name: "Outback", startYear: 2000, endYear: 2014 },
+                { name: "Forester", startYear: 2000, endYear: 2014 },
+                { name: "Tribeca", startYear: 2005, endYear: 2014 },
+                { name: "Crosstrek", startYear: 2016, endYear: 2021 },
+                { name: "Ascent", startYear: 2019, endYear: 2021 },
+                { name: "Solterra", startYear: 2022, endYear: currentYear },
+                { name: "BRZ", startYear: 2022, endYear: currentYear },
+                { name: "WRX", startYear: 2022, endYear: currentYear }
+            ],
+            "Suzuki": [
+                { name: "Alto", startYear: 2000, endYear: currentYear },
+                { name: "Baleno", startYear: 2000, endYear: 2006 },
+                { name: "Grand Vitara", startYear: 2000, endYear: 2008 },
+                { name: "Swift", startYear: 2004, endYear: currentYear },
+                { name: "SX4", startYear: 2006, endYear: 2014 },
+                { name: "Kizashi", startYear: 2009, endYear: 2014 },
+                { name: "Vitara", startYear: 2015, endYear: currentYear },
+                { name: "S-Cross", startYear: 2015, endYear: 2022 },
+                { name: "Ertiga", startYear: 2018, endYear: currentYear },
+                { name: "Jimny", startYear: 2018, endYear: currentYear },
+                { name: "Across", startYear: 2020, endYear: currentYear },
+                { name: "Swace", startYear: 2020, endYear: currentYear },
+                { name: "S-Presso", startYear: 2019, endYear: currentYear },
+                { name: "Fronx", startYear: 2023, endYear: currentYear },
+                { name: "e-Vitara", startYear: 2025, endYear: currentYear }
+            ],
+            "Toyota": [
+                { name: "Avanza", startYear: 2003, endYear: 2021 },
+                { name: "Calya", startYear: 2016, endYear: 2016 },
+                { name: "Corolla", startYear: 2000, endYear: currentYear },
+                { name: "Fortuner", startYear: 2005, endYear: currentYear },
+                { name: "Hiace", startYear: 2000, endYear: currentYear },
+                { name: "Hilux", startYear: 2000, endYear: currentYear },
+                { name: "Land Cruiser Prado", startYear: 2000, endYear: currentYear },
+                { name: "RAV4", startYear: 2000, endYear: currentYear },
+                { name: "Sequoia", startYear: 2001, endYear: currentYear },
+                { name: "Sienna", startYear: 2000, endYear: currentYear },
+                { name: "Tacoma", startYear: 2000, endYear: currentYear },
+                { name: "Tundra", startYear: 2000, endYear: currentYear },
+                { name: "Vellfire", startYear: 2008, endYear: currentYear },
+                { name: "Yaris", startYear: 2000, endYear: currentYear }
+            ],
+            "Volkswagen": [
+                { name: "Beetle", startYear: 2000, endYear: 2019 },
+                { name: "Golf", startYear: 2000, endYear: currentYear },
+                { name: "Jetta", startYear: 2000, endYear: currentYear },
+                { name: "Passat", startYear: 2000, endYear: currentYear },
+                { name: "Polo", startYear: 2000, endYear: currentYear },
+                { name: "Tiguan", startYear: 2007, endYear: currentYear },
+                { name: "Touareg", startYear: 2002, endYear: currentYear },
+                { name: "Touran", startYear: 2003, endYear: 2015 },
+                { name: "Caddy", startYear: 2004, endYear: currentYear },
+                { name: "Sharan", startYear: 2000, endYear: currentYear },
+                { name: "Scirocco", startYear: 2008, endYear: 2017 },
+                { name: "Arteon", startYear: 2017, endYear: currentYear },
+                { name: "T-Roc", startYear: 2017, endYear: currentYear },
+                { name: "T-Cross", startYear: 2019, endYear: currentYear },
+                { name: "Taos", startYear: 2020, endYear: currentYear },
+                { name: "ID.3", startYear: 2019, endYear: currentYear },
+                { name: "ID.4", startYear: 2020, endYear: currentYear },
+                { name: "ID. Buzz", startYear: 2022, endYear: currentYear },
+                { name: "ID.7", startYear: 2023, endYear: currentYear },
+                { name: "ID.5", startYear: 2021, endYear: currentYear },
+                { name: "ID.6", startYear: 2021, endYear: currentYear },
+                { name: "ID. UNYX", startYear: 2024, endYear: currentYear },
+                { name: "Taigo", startYear: 2020, endYear: currentYear },
+                { name: "Tayron", startYear: 2018, endYear: currentYear },
+                { name: "Tayron X", startYear: 2020, endYear: currentYear },
+                { name: "Tavendor", startYear: 2022, endYear: currentYear },
+                { name: "Talagon", startYear: 2021, endYear: currentYear },
+                { name: "Lavida", startYear: 2008, endYear: currentYear },
+                { name: "Magotan", startYear: 2005, endYear: currentYear },
+                { name: "Lamando", startYear: 2014, endYear: currentYear },
+                { name: "Sagitar", startYear: 2018, endYear: currentYear },
+                { name: "Viloran", startYear: 2020, endYear: currentYear },
+                { name: "Vento", startYear: 2010, endYear: 2022 }
+            ],
+            "Volvo": [
+                { name: "S60", startYear: 2000, endYear: 2009 },
+                { name: "S60", startYear: 2010, endYear: 2018 },
+                { name: "S60", startYear: 2019, endYear: currentYear },
+                { name: "V70", startYear: 2000, endYear: 2007 },
+                { name: "V70", startYear: 2008, endYear: 2016 },
+                { name: "V70", startYear: 2017, endYear: currentYear },
+                { name: "XC70", startYear: 2000, endYear: 2007 },
+                { name: "XC70", startYear: 2008, endYear: 2016 },
+                { name: "XC70", startYear: 2017, endYear: currentYear },
+                { name: "XC90", startYear: 2002, endYear: 2014 },
+                { name: "XC90", startYear: 2015, endYear: currentYear },
+                { name: "S80", startYear: 2006, endYear: 2016 },
+                { name: "V60", startYear: 2010, endYear: 2018 },
+                { name: "V60", startYear: 2019, endYear: currentYear },
+                { name: "XC60", startYear: 2008, endYear: 2017 },
+                { name: "XC60", startYear: 2018, endYear: currentYear },
+                { name: "S40", startYear: 2004, endYear: 2012 },
+                { name: "V40", startYear: 2012, endYear: currentYear },
+                { name: "C30", startYear: 2006, endYear: 2013 },
+                { name: "C70", startYear: 2006, endYear: 2013 },
+                { name: "S90", startYear: 2016, endYear: currentYear },
+                { name: "V90", startYear: 2016, endYear: currentYear },
+                { name: "XC40", startYear: 2017, endYear: currentYear },
+                { name: "C40 Recharge", startYear: 2021, endYear: currentYear },
+                { name: "EX30", startYear: 2023, endYear: currentYear },
+                { name: "EX90", startYear: 2024, endYear: currentYear },
+                { name: "EM90", startYear: 2024, endYear: currentYear }
+            ]
+        };
+
+        const allMenus = [yearMenu, brandMenu, modelMenu];
+
+        function closeAllMenus() {
+            allMenus.forEach(menu => menu.classList.remove("active"));
+        }
+
+        function resetBrandMenu() {
+            const brandBtn = brandMenu.querySelector(".sBtn-text");
+            brandBtn.innerText = "Marca";
+            brandMenu.classList.add("disabled");
+            brandOptions.innerHTML = "";
+            brands.forEach(brand => {
+                const option = document.createElement("li");
+                option.classList.add("option");
+                option.innerHTML = `<img src="https://drive.google.com/thumbnail?id=${brand.logo}" alt="${brand.name} logo"><span class="option-text">${brand.name}</span>`;
+                brandOptions.appendChild(option);
+            });
+        }
+
+        function resetModelMenu() {
+            const modelSBtn = modelMenu.querySelector(".sBtn-text");
+            modelSBtn.innerText = "Modelo";
+            modelOptions.innerHTML = "";
+            modelMenu.classList.add("disabled");
+        }
+
+        function setupMenu(menu) {
+            const selectBtn = menu.querySelector(".select-btn");
+            const options = menu.querySelectorAll(".option");
+            const sBtn_text = menu.querySelector(".sBtn-text");
+
+            selectBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (!menu.classList.contains("disabled")) {
+                    closeAllMenus();
+                    menu.classList.toggle("active");
+                }
+            });
+
+            options.forEach(option => {
+                option.addEventListener("click", () => {
+                    let selectedOption = option.querySelector(".option-text").innerText;
+                    sBtn_text.innerText = selectedOption;
+                    menu.classList.remove("active");
+                    if (menu === yearMenu) {
+                        resetBrandMenu();
+                        resetModelMenu();
+                    }
+                    if (menu === brandMenu) {
+                        resetModelMenu();
+                    }
+                    updateSelections();
+                });
+            });
+        }
+
+        allMenus.forEach(setupMenu);
+
+        function updateSelections() {
+            const selectedYear = parseInt(yearMenu.querySelector(".sBtn-text").innerText);
+            const selectedBrand = brandMenu.querySelector(".sBtn-text").innerText;
+
+            if (!isNaN(selectedYear)) {
+                brandMenu.classList.remove("disabled");
+                brandOptions.innerHTML = "";
+                brands.forEach(brand => {
+                    // Verificar si la marca tiene modelos disponibles para el año seleccionado
+                    const hasModelsForYear = models[brand.name] && models[brand.name].some(model =>
+                        model.startYear <= selectedYear && model.endYear >= selectedYear
+                    );
+
+                    if (brand.year <= selectedYear && hasModelsForYear) {
+                        const option = document.createElement("li");
+                        option.classList.add("option");
+                        option.innerHTML = `<img src="https://drive.google.com/thumbnail?id=${brand.logo}" alt="${brand.name} logo"><span class="option-text">${brand.name}</span>`;
+                        brandOptions.appendChild(option);
+                    }
+                });
+                setupMenu(brandMenu);
+            } else {
+                brandMenu.classList.add("disabled");
+            }
+
+            if (selectedBrand !== "Marca" && models[selectedBrand]) {
+                modelMenu.classList.remove("disabled");
+                modelOptions.innerHTML = "";
+                models[selectedBrand].forEach(model => {
+                    if (model.startYear <= selectedYear && model.endYear >= selectedYear) {
+                        const option = document.createElement("li");
+                        option.classList.add("option");
+                        option.innerHTML = `<span class="option-text">${model.name}</span>`;
+                        modelOptions.appendChild(option);
+                    }
+                });
+                setupMenu(modelMenu);
+            } else {
+                modelMenu.classList.add("disabled");
+            }
+
+            const selectedModel = modelMenu.querySelector(".sBtn-text").innerText;
+            cotizarBtn.disabled = !(selectedYear !== "Año" &&
+                selectedBrand !== "Marca" &&
+                selectedModel !== "Modelo");
+        }
+
+        function validateName(name) {
+            name = name.trim();
+            return !/\d/.test(name);
+        }
+
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function validatePhone(phone) {
+            const patt = /^(\+?\d{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}$/;
+            return patt.test(phone);
+        }
+
+        function validateView(viewNumber) {
+            if (viewNumber === 1) {
+                return yearMenu.querySelector(".sBtn-text").innerText !== "Año" &&
+                    brandMenu.querySelector(".sBtn-text").innerText !== "Marca" &&
+                    modelMenu.querySelector(".sBtn-text").innerText !== "Modelo";
+            } else if (viewNumber === 2) {
+                const amountToSpend = document.getElementById('amountToSpend').value;
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const phone = document.getElementById('phone').value;
+                const amountToSpendError = document.getElementById('amountToSpendError');
+                const nameError = document.getElementById('nameError');
+                const emailError = document.getElementById('emailError');
+                const phoneError = document.getElementById('phoneError');
+
+                amountToSpendError.textContent = '';
+                nameError.textContent = '';
+                emailError.textContent = '';
+                phoneError.textContent = '';
+
+                let isValid = true;
+
+                if (amountToSpend === '' || name === '' || email === '' || phone === '') {
+                    isValid = false;
+                } else {
+
+                    if (isNaN(amountToSpend) || amountToSpend <= 0) {
+                        amountToSpendError.textContent = 'Ingrese un número válido de monto.';
+                        isValid = false;
+                    }
+                    if (!validateName(name)) {
+                        nameError.textContent = 'El nombre completo no puede contener numeros.';
+                        isValid = false;
+                    }
+                    if (!validateEmail(email)) {
+                        emailError.textContent = 'Ingrese un correo electrónico válido.';
+                        isValid = false;
+                    }
+                    if (!validatePhone(phone)) {
+                        phoneError.textContent = 'Ingrese un número de teléfono válido (10 dígitos).';
+                        isValid = false;
+                    }
+                }
+                return isValid;
+            }
+            return false;
+        }
+
+        function nextView() {
+            if (currentView < views.length - 1 && validateView(currentView + 1)) {
+                views[currentView].classList.remove('active');
+                currentView++;
+                views[currentView].classList.add('active');
+            }
+        }
+
+        function prevView() {
+            if (currentView > 0) {
+                views[currentView].classList.remove('active');
+                currentView--;
+                views[currentView].classList.add('active');
+            }
+        }
+
+        function finishQuotation() {
+            if (validateView(2)) {
+                const data = {
+                    year: yearMenu.querySelector(".sBtn-text").innerText,
+                    brand: brandMenu.querySelector(".sBtn-text").innerText,
+                    model: modelMenu.querySelector(".sBtn-text").innerText,
+                    amountToSpend: document.getElementById('amountToSpend').value,
+                    fullName: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                };
+
+                const scriptURL = 'https://script.google.com/macros/s/AKfycbylE6gB-VEy05wiG9II2rOAE9xwUNWgVruqWTO7jMpB-vTnNnPmwrZ1CrcUaaG_NX6rqg/exec';
+
+                fetch(scriptURL, {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors' // Agregar esta línea
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(result => {
+                        console.log('Datos enviados con éxito:', result);
+                        nextView();
+                    })
+                    .catch(error => {
+                        console.error('Error al enviar los datos:', error);
+                        alert('Hubo un error al enviar los datos. Por favor, intenta nuevamente.');
+                    });
+            }
+        }
+
+        function updateFinishButton() {
+            const finishBtn = document.getElementById('finishBtn');
+            finishBtn.disabled = !validateView(2);
+        }
+
+        document.getElementById('amountToSpend').addEventListener('input', updateFinishButton);
+        document.getElementById('name').addEventListener('input', updateFinishButton);
+        document.getElementById('email').addEventListener('input', updateFinishButton);
+        document.getElementById('phone').addEventListener('input', updateFinishButton);
+
+        function resetForm() {
+            currentView = 0;
+            views.forEach((view, index) => {
+                view.classList.toggle('active', index === 0);
+            });
+            document.querySelectorAll('input, select').forEach(element => {
+                element.value = '';
+            });
+            yearMenu.querySelector(".sBtn-text").innerText = "Año";
+            brandMenu.querySelector(".sBtn-text").innerText = "Marca";
+            modelMenu.querySelector(".sBtn-text").innerText = "Modelo";
+            resetBrandMenu();
+            resetModelMenu();
+            updateSelections();
+            updateFinishButton();
+        }
+
+        // Cerrar menús al hacer clic fuera de ellos
+        document.addEventListener("click", closeAllMenus);
+
+        updateSelections();
+        updateFinishButton();
+    </script>
+</body>
+
+</html>
