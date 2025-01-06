@@ -1377,6 +1377,15 @@
 
         function finishQuotation() {
             if (validateView(2)) {
+                // Mostrar algún indicador de carga
+                const finishBtn = document.getElementById('finishBtn');
+                finishBtn.disabled = true;
+                finishBtn.textContent = 'Enviando...';
+
+                const SHEET_ID = '1ihUc6mRkiN2Juz1KMkWqgPLFvKGep8ggz6qINo-jOqU';
+                const SHEET_NAME = 'DATA';
+                const SCRIPT_URL = `https://script.google.com/macros/s/AKfycbzjD2Yes2KoQGDg553Dfy-c-nbM5es5CF0t1kzk5JtaakoiSRHLbNi1EcSvthXa4y5smQ/exec`;
+
                 const data = {
                     year: yearMenu.querySelector(".sBtn-text").innerText,
                     brand: brandMenu.querySelector(".sBtn-text").innerText,
@@ -1384,33 +1393,21 @@
                     amountToSpend: document.getElementById('amountToSpend').value,
                     fullName: document.getElementById('name').value,
                     email: document.getElementById('email').value,
-                    phone: document.getElementById('phone').value,
+                    phone: document.getElementById('phone').value
                 };
 
-                const scriptURL = 'https://script.google.com/macros/s/AKfycbylE6gB-VEy05wiG9II2rOAE9xwUNWgVruqWTO7jMpB-vTnNnPmwrZ1CrcUaaG_NX6rqg/exec';
-
-                fetch(scriptURL, {
+                fetch(SCRIPT_URL, {
                     method: 'POST',
-                    body: JSON.stringify(data),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    mode: 'cors' // Agregar esta línea
+                    body: JSON.stringify(data)
                 })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(result => {
-                        console.log('Datos enviados con éxito:', result);
-                        nextView();
-                    })
-                    .catch(error => {
-                        console.error('Error al enviar los datos:', error);
-                        alert('Hubo un error al enviar los datos. Por favor, intenta nuevamente.');
-                    });
+                .then(response => response.json())
+                .then(data => {
+                    nextView();
+                })
+                .catch(error => {
+                    finishBtn.disabled = false;
+                    finishBtn.textContent = 'Finalizar';
+                });
             }
         }
 
